@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script defer src="https://cloud.umami.is/script.js" data-website-id="91a0cfc0-487f-4da9-a6a9-8e256be25769"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CV — A. Jonathan Rodríguez</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F7FAFF;
+  --ink:#0A2540;
+  --accent:#2F6FED;
+  --muted:rgba(10,37,64,0.65);
+  --card:#ffffff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink)}
+
+header {
+  position: sticky;
+  top: 0;
+  z-index: 100; /* Aumentado para asegurar que esté sobre el mapa */
+  backdrop-filter: blur(10px);
+  background: rgba(247,250,255,.85);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 40px;
+  border-bottom: 1px solid rgba(0,0,0,.05);
+}
+
+.store-name {
+  font-family: 'Playfair Display';
+  font-weight: 700;
+  white-space: nowrap; /* Evita que el nombre se rompa en dos líneas */
+}
+
+nav {
+  display: flex;
+  gap: 24px;
+  font-size: .75rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+nav a {
+  text-decoration: none;
+  color: var(--muted);
+  transition: 0.3s;
+}
+
+nav a:hover {
+  color: var(--accent);
+}
+
+
+@media (max-width: 850px) {
+  header {
+    flex-direction: column; /* Apila nombre y menú */
+    padding: 15px 20px;
+    gap: 15px;
+  }
+
+  .store-name {
+    font-size: 0.9rem; /* Un poco más pequeño en móvil */
+  }
+
+  nav {
+    gap: 12px; /* Reduce espacio entre links */
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap; /* Si no caben, bajan a la siguiente línea de forma ordenada */
+  }
+  
+  nav a {
+    font-size: 0.65rem; /* Ajuste fino de lectura */
+    padding: 5px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Para móviles muy pequeños, permitimos un scroll horizontal suave en el menú */
+  nav {
+    justify-content: flex-start;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 5px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Esconde scrollbar en Firefox */
+  }
+  
+  nav::-webkit-scrollbar {
+    display: none; /* Esconde scrollbar en Chrome/Safari */
+  }
+}
+
+.hero{padding:120px 40px 80px;max-width:1100px;margin:auto}
+.hero-title {
+  font-family: 'Playfair Display';
+  font-weight: 900;
+  font-size: clamp(3rem, 6vw, 5.5rem);
+  line-height: 1.2; 
+  padding: 10px 0; 
+  margin-bottom: 24px;
+  background: linear-gradient(90deg, #0A2540, #2F6FED);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero-desc{max-width:600px;font-size:1.05rem;color:var(--muted);line-height:1.7;margin-bottom:40px}
+.btn{background:var(--ink);color:#fff;padding:14px 28px;text-decoration:none;font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;transition:.2s}
+.btn:hover{transform:translateY(-2px);background:var(--accent)}
+
+section{padding:100px 40px;max-width:1100px;margin:auto}
+.sec-title{font-family:'Playfair Display';font-size:2.4rem;font-weight:800;margin-bottom:56px}
+
+.grid{display:grid;gap:24px}
+.grid-3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+
+.card{
+  background:var(--card);
+  padding:24px;border-radius:12px;
+  box-shadow:0 6px 20px rgba(0,0,0,.05);
+  transition:.2s
+}
+.card:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(0,0,0,.08)}
+.card h3{font-size:1.05rem;margin-bottom:10px;font-weight:600}
+.card p{font-size:.85rem;color:var(--muted);line-height:1.6}
+
+.exp-item {
+  border-left: 2px solid rgba(0,0,0,.08);
+  padding-left: 24px;
+  margin-bottom: 32px;
+  position: relative;
+  margin-left: 120px; 
+}
+
+.exp-item::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 6px;
+  width: 10px;
+  height: 10px;
+  background: var(--accent);
+  border-radius: 50%;
+}
+
+.exp-date {
+  position: absolute;
+  left: -130px; 
+  top: 2px;
+  width: 100px;
+  text-align: right;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+  font-family: 'DM Sans', sans-serif;
+}
+.exp-role{font-weight:600;margin-bottom:4px}
+.exp-company{font-size:.85rem;color:var(--accent);margin-bottom:8px}
+.exp-desc{font-size:.85rem;color:var(--muted);line-height:1.7}
+
+.list{display:flex;flex-direction:column;gap:10px}
+.list-item{font-size:.9rem;color:var(--muted);line-height:1.6}
+
+footer{padding:60px 40px;text-align:center;font-size:.7rem;color:var(--muted)}
+
+/* Slider Container */
+.slider-container {
+  width: 100%;
+  overflow: hidden;
+  padding: 40px 0;
+  background: #fff;
+  position: relative;
+}
+
+.slider-track {
+  display: flex;
+  width: calc(250px * 12); 
+  animation: scroll-infinito 30s linear infinite;
+}
+
+.slide {
+  width: 250px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 40px;
+}
+
+.slide img {
+  width: 120px;
+  height: auto;
+  filter: grayscale(100%);
+  opacity: 0.6;
+  transition: all 0.3s ease;
+}
+
+.slide img:hover {
+  filter: grayscale(0%);
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+@keyframes scroll-infinito {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(calc(-250px * 6)); } 
+}
+
+.slider-container:hover .slider-track {
+  animation-play-state: paused;
+}
+
+.slider-container::before,
+.slider-container::after {
+  content: "";
+  height: 100%;
+  position: absolute;
+  width: 150px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.slider-container::before {
+  left: 0;
+  background: linear-gradient(to right, var(--bg) 0%, rgba(255,255,255,0) 100%);
+}
+
+.slider-container::after {
+  right: 0;
+  background: linear-gradient(to left, var(--bg) 0%, rgba(255,255,255,0) 100%);
+}
+
+.cert-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 30px;
+}
+
+.cert-card {
+  background: var(--card);
+  padding: 30px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(0,0,0,.05);
+  transition: .3s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.cert-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(0,0,0,.08);
+}
+
+.cert-img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin-bottom: 20px;
+  filter: grayscale(20%);
+  transition: .3s;
+}
+
+.cert-card:hover .cert-img {
+  filter: grayscale(0%);
+  transform: scale(1.05);
+}
+
+.cert-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+#contacto {
+  background: #fff; 
+  border-radius: 24px;
+  padding: 80px 40px;
+  margin-top: 40px;
+  margin-bottom: 80px;
+  box-shadow: 0 10px 40px rgba(10,37,64,0.03);
+  text-align: center;
+}
+
+.availability-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #E7F9ED;
+  color: #2D7A4D;
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.pulse {
+  width: 8px;
+  height: 8px;
+  background: #2D7A4D;
+  border-radius: 50%;
+  animation: pulse-animation 2s infinite;
+}
+
+@keyframes pulse-animation {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(45, 122, 77, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(45, 122, 77, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(45, 122, 77, 0); }
+}
+
+.info-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  max-width: 900px;
+  margin: 0 auto 40px;
+  border-top: 1px solid rgba(0,0,0,0.05);
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  padding: 30px 0;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.info-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.info-value {
+  font-size: 1rem;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.contacto-grid {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.contacto-card {
+  background: var(--bg);
+  padding: 20px 32px;
+  border-radius: 16px;
+  text-decoration: none;
+  color: var(--ink);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  min-width: 240px;
+  justify-content: center;
+}
+
+.contacto-card:hover {
+  background: var(--accent);
+  color: #fff;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(47, 111, 237, 0.15);
+}
+
+.whatsapp-btn:hover {
+  background: #25D366 !important;
+  border-color: #25D366;
+}
+
+.contacto-card svg {
+  fill: currentColor;
+}
+
+#map {
+  height: 400px;
+  width: 100%;
+  border-radius: 20px;
+  margin-top: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  z-index: 1; /* Para que no se superponga al menú */
+}
+
+.map-section {
+  padding: 80px 40px;
+  max-width: 1100px;
+  margin: auto;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="#" class="store-name" style="text-decoration: none; color: inherit;">Armando Jonathan Rodríguez Lagunas</a>
+<nav>
+  <a href="#habilidades">Skills</a>
+  <a href="#certificaciones">Certifications</a> 
+  <a href="#experiencia">Experience</a>
+  <a href="#proyectos">Industries</a>
+</nav>
+</header>
+
+<section class="hero">
+  <h1 class="hero-title">eCommerce & Software Engineering Expert</h1>
+  <p class="hero-desc">
+    Over 10 years collaborating with local and global companies to design, build, and scale eCommerce platforms. Focused on aligning business goals with technology, prioritizing customer experience, reusability, and scalability.
+  </p>
+</section>
+
+<section id="habilidades">
+  <h2 class="sec-title">Technical Skills</h2>
+  <div class="grid grid-3">
+    <div class="card">
+      <h3>Platforms</h3>
+      <p>SAP CX, SAP Commerce Cloud, Agentforce Commerce, VTEX, Adobe Commerce (Magento), PrestaShop, Odoo...</p>
+    </div>
+    <div class="card">
+      <h3>Architecture</h3>
+      <p>Headless, Microservices, Cloud, Composable, PWA, A2A</p>
+    </div>
+    <div class="card">
+      <h3>Methodologies</h3>
+      <p>Scrum / Agile, SAFe, SAP Activate, Design Thinking, Gamification, Waterfall</p>
+    </div>
+    <div class="card">
+      <h3>User Experience</h3>
+      <p>Customer Journey Analysis & Definition, Performance Measurement & Optimization, CRM & ERP Integration and Interactions</p>
+    </div>
+    <div class="card">
+      <h3>Models</h3>
+      <p>B2B, B2C, B2B2C, C2C, C2B, D2C, Marketplace</p>
+    </div>
+	<div class="card">
+      <h3>Integrations</h3>
+      <p>Definition and Modeling: Core, API's, Adaptors </p>
+    </div>
+    <div class="card">
+      <h3>Upgrades</h3>
+      <p>On-Premise to Cloud, Cloud to Cloud, Revamp, Replatforming</p>
+    </div>
+    <div class="card">
+      <h3>Growth</h3>
+      <p>Conversion Rate Optimization, Multichannel Strategies, Loyalty Programs, Competitive Analysis</p>
+    </div>
+  </div>
+</section>
+
+<section id="roles">
+  <h2 class="sec-title">Roles & Competencies</h2>
+  <div class="grid grid-3">
+	<div class="card"><h3>Software Engineering</h3></div>
+    <div class="card"><h3>Sr Business Analyst</h3></div>
+    <div class="card"><h3>Sr Functional Lead</h3></div>
+    <div class="card"><h3>Solution Architect</h3></div>
+    <div class="card"><h3>Delivery Lead</h3></div>
+    <div class="card"><h3>Product Owner</h3></div>
+    <div class="card"><h3>Scrum Master</h3></div>
+    <div class="card"><h3>Growth Practitioner</h3></div>
+    <div class="card"><h3>UX Designer</h3></div>
+  </div>
+</section>
+
+<section id="experiencia">
+  <h2 class="sec-title">Experience</h2>
+  
+  <div class="exp-item">
+    <div class="exp-date">2026 - </div>
+    <div class="exp-role">Open to Work...</div>
+    <div class="exp-company">Seeking Next Opportunity</div>
+    <div class="exp-desc">Actively looking for my next professional collaboration.</div>
+  </div>
+
+  <div class="exp-item">
+    <div class="exp-date">2022 — 2025</div>
+    <div class="exp-role">Associate Manager — Custom Software Engineering</div>
+    <div class="exp-company">Accenture Iberia</div>
+    <div class="exp-desc">Led monolithic and headless eCommerce projects for enterprise clients across EMEA. Responsible for understanding the business, analysis and solution proposal, project management, architecture definition, requirements analysis, solution design, implementation coordination, end-to-end testing, and post-production support.</div>
+  </div>
+
+  <div class="exp-item">
+    <div class="exp-date">2019 — 2022</div>
+    <div class="exp-role">SAP Commerce Cloud SME</div>
+    <div class="exp-company">EPAM / NEORIS</div>
+    <div class="exp-desc">Subject matter expert across multiple SAP Commerce implementations. Responsible for functional and technical definitions, development oversight, back-office configurations, and digital roadmap advisory.</div>
+  </div>
+
+  <div class="exp-item">
+    <div class="exp-date">2018 — 2019</div>
+    <div class="exp-role">Solution Architect</div>
+    <div class="exp-company">Florida Ice & Farm Company</div>
+    <div class="exp-desc">Solutions architect in charge of supervising the B2B eCommerce platform. Validated functional definitions, defined integrations with third-party systems (ERP, OMS, CRM), and led the technical team.</div>
+  </div>
+
+  <div class="exp-item">
+    <div class="exp-date">2017 — 2018</div>
+    <div class="exp-role">SAP Commerce Functional Lead</div>
+    <div class="exp-company">EPAM / NEORIS</div>
+    <div class="exp-desc">Functional Lead for multi-site SAP Commerce implementations. Functional and technical definitions for all implementations and platform configurations across various technologies.</div>
+  </div>
+
+  <div class="exp-item">
+    <div class="exp-date">2010 — 2017</div>
+    <div class="exp-role">Business Analyst / eCommerce Consultant</div>
+    <div class="exp-company">Accenture México</div>
+    <div class="exp-desc">Business Analyst and eCommerce Consultant for custom software implementations and eCommerce platforms for large-scale clients. Led client understanding sessions and developed solution proposals.</div>
+  </div>
+
+  <div class="exp-item">
+    <div class="exp-date">2004 — 2007</div>
+    <div class="exp-role">Electronic Engineering</div>
+    <div class="exp-company">UAM</div>
+    <div class="exp-desc">Academic Background</div>
+  </div>
+</section>
+
+<section id="proyectos">
+  <h2 class="sec-title">Industries</h2>
+  <div class="grid grid-3">
+    <div class="card"><h3>Retail</h3></div>
+    <div class="card"><h3>Beauty & Fashion</h3></div>
+    <div class="card"><h3>Food & Beverage</h3></div>
+    <div class="card"><h3>Telco</h3></div>
+    <div class="card"><h3>Pharma</h3></div>
+    <div class="card"><h3>Gas & Oil</h3></div>
+    <div class="card"><h3>Mining & Metallurgy</h3></div>
+    <div class="card"><h3>Construction & Concrete</h3></div>
+    <div class="card"><h3>Banking & Government</h3></div>
+    <div class="card"><h3>Aerospace & Defense</h3></div>
+  </div>
+</section>
+
+<section id="clientes-carrusel">
+  <h2 class="sec-title">Some Key Clients</h2>
+  <div class="slider-container">
+    <div class="slider-track">
+      <div class="slide"><img src="https://brandslogos.com/wp-content/uploads/images/large/tetra-pak-logo-vector.svg" alt="Tetrapak"></div>
+      <div class="slide"><img src="https://upload.wikimedia.org/wikipedia/commons/6/68/Novartis-Logo.svg" alt="Novartis"></div>
+      <div class="slide"><img src="https://upload.wikimedia.org/wikipedia/commons/5/5d/Airbus_Logo_2017.svg" alt="Airbus"></div>
+      <div class="slide"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Carolina_Herrera_logo.svg" alt="Carolina Herrera"></div>
+      <div class="slide"><img src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_de_Am%C3%A9rica_M%C3%B3vil.svg" alt="America Movil"></div>
+      <div class="slide"><img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Cemex_Logo.svg" alt="CEMEX"></div>
+      <div class="slide"><img src="https://images.ctfassets.net/skwi4dk8g6ae/5kdrjp9dJFpKncagf6puvg/549820d53c5a1c530e1483ef998e96ae/logoKennedyRed.svg" alt="Kennedy Concrete"></div>
+      <div class="slide"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/LogoSorianaSVG.svg/960px-LogoSorianaSVG.svg.png" alt="Soriana"></div>
+      <div class="slide"><img src="https://vitrocar.com.mx/wp-content/uploads/2025/12/LogoVitrocar.png" alt="Vitrocar"></div>
+      <div class="slide"><img src="https://wp.logos-download.com/wp-content/uploads/2024/10/Florida_Ice__Farm_Co._Logo-3000x1363.png" alt="FIFCO"></div>
+      <div class="slide"><img src="https://upload.wikimedia.org/wikipedia/commons/b/b9/Office_Depot_logo_%28horizontal%29.svg" alt="Office Depot"></div>
+      <div class="slide"><img src="https://brandslogos.com/wp-content/uploads/images/large/tetra-pak-logo-vector.svg" alt="Tetrapak"></div>
+      <div class="slide"><img src="https://upload.wikimedia.org/wikipedia/commons/6/68/Novartis-Logo.svg" alt="Novartis"></div>
+      <div class="slide"><img src="https://upload.wikimedia.org/wikipedia/commons/5/5d/Airbus_Logo_2017.svg" alt="Airbus"></div>
+      <div class="slide"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Carolina_Herrera_logo.svg" alt="Carolina Herrera"></div>
+      <div class="slide"><img src="https://upload.wikimedia.org/wikipedia/commons/5/56/Logo_de_Am%C3%A9rica_M%C3%B3vil.svg" alt="America Movil"></div>
+      <div class="slide"><img src="https://upload.wikimedia.org/wikipedia/commons/2/24/Cemex_Logo.svg" alt="CEMEX"></div>
+      <div class="slide"><img src="https://images.ctfassets.net/skwi4dk8g6ae/5kdrjp9dJFpKncagf6puvg/549820d53c5a1c530e1483ef998e96ae/logoKennedyRed.svg" alt="Kennedy Concrete"></div>
+      <div class="slide"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/LogoSorianaSVG.svg/960px-LogoSorianaSVG.svg.png" alt="Soriana"></div>
+      <div class="slide"><img src="https://vitrocar.com.mx/wp-content/uploads/2025/12/LogoVitrocar.png" alt="Vitrocar"></div>
+      <div class="slide"><img src="https://wp.logos-download.com/wp-content/uploads/2024/10/Florida_Ice__Farm_Co._Logo-3000x1363.png" alt="FIFCO"></div>
+      <div class="slide"><img src="https://upload.wikimedia.org/wikipedia/commons/b/b9/Office_Depot_logo_%28horizontal%29.svg" alt="Office Depot"></div>
+    </div>
+  </div>
+</section>
+
+<section class="map-section">
+  <h2 class="sec-title">Global Experience</h2>
+  <p class="hero-desc">In-person and remote collaborations worldwide.</p>
+  <div id="map"></div>
+</section>
+
+<section id="certificaciones">
+  <h2 class="sec-title">Certifications</h2>
+  <div class="cert-grid">
+    <div class="cert-card">
+      <img src="https://images.credly.com/size/220x220/images/fcc89b87-8169-4a0d-bae5-05df994cd176/blob" alt="SAP Commerce Cloud Business User" class="cert-img">
+      <div class="cert-title">SAP Commerce Cloud - Business User</div>
+	  <span class="exp-desc">2021-2027</span>
+	  
+    </div>
+    <div class="cert-card">
+      <img src="https://images.credly.com/images/27ec3804-027b-4f5d-ad73-5e495eb2729f/blob" alt="Developer — SAP Commerce Cloud" class="cert-img">
+      <div class="cert-title">SAP Commerce Cloud - Developer</div>
+	  <span class="exp-desc">2021-2027</span>
+    </div>
+    <div class="cert-card">
+      <img src="https://images.credly.com/size/160x160/images/8b546a54-b9d3-4ad8-bb8a-89cccaef3141/E_C4HYCP1811.png" alt="SAP Certified Product Support Specialist" class="cert-img">
+      <div class="cert-title">SAP Commerce Cloud - Product Support Specialist</div>
+	  <span class="exp-desc">2021-2025 <br>(SAP Discontinued)</span>
+    </div>
+    <div class="cert-card">
+      <img src="https://img-c.udemycdn.com/open-badges/v2/badge-class/2028805321/36cb3e14-63a7-465d-a461-114a601b8c9d11937474151916786224.png" alt="Generative AI Leader" class="cert-img">
+      <div class="cert-title">Google - Generative AI Leader</div>
+	  <span class="exp-desc">2026</span>
+    </div>
+    <div class="cert-card">
+      <img src="https://images.credly.com/size/220x220/images/b1bc1abc-c04c-4b80-b3b8-eb13f521eb60/blob" alt="Scrum" class="cert-img">
+      <div class="cert-title">Scrum Foundation Professional Certification — SFPC</div>
+	  <span class="exp-desc">2021-2028</span>
+    </div>
+  </div>
+</section>
+
+<section id="contacto">
+  <div class="availability-badge">
+    <span class="pulse"></span> Available — Open to Work
+  </div>
+
+  <div class="info-row">
+    <div class="info-item">
+      <span class="info-label">Location</span>
+      <span class="info-value">Seville, Spain</span>
+      <span class="exp-desc">Full Time Available:<br> Remote/Hybrid/Company Relocation/Self-Relocation</span>
+    </div>
+    <div class="info-item">
+      <span class="info-label">Work Permit</span>
+      <span class="info-value">Active</span>
+	  <span class="exp-desc">Since 2022</span>
+    </div>
+	    <div class="info-item">
+      <span class="info-label">Travel Availability</span>
+      <span class="info-value">Yes</span>
+	        <span class="info-label">EE.UU. Travel Visa</span>
+      <span class="info-value">Yes</span>
+    </div>
+    <div class="info-item">
+      <span class="info-label">Languages</span>
+      <span class="info-value">Spanish (Native)<br> English (B2+)</span>
+    </div>
+  </div>
+</section>
+
+<footer>
+  © 2026 — Jonathan Rodríguez
+</footer>
+<script>
+ 
+  var map = L.map('map').setView([20, -20], 2);
+
+  
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
+
+ 
+  var countries = [
+    { name: "Spain", coords: [40.4168, -3.7038] },
+    { name: "México", coords: [19.4326, -99.1332] },
+    { name: "United Kingdom", coords: [51.5074, -0.1278] },
+    { name: "Costa Rica", coords: [9.9281, -84.0907] },
+    { name: "United States", coords: [37.0902, -95.7129] },
+    { name: "Ecuador", coords: [-1.8312, -78.1834] },
+    { name: "Venezuela", coords: [6.4238, -66.5897] },
+    { name: "Brazil", coords: [-14.2350, -51.9253] },
+    { name: "Belgium", coords: [50.8503, 4.3517] },
+    { name: "Sweden", coords: [59.3293, 18.0686] },
+    { name: "Germany", coords: [51.1657, 10.4515] }
+  ];
+
+
+  countries.forEach(function(country) {
+    L.marker(country.coords)
+      .addTo(map)
+      .bindPopup("<b>" + country.name + "</b>");
+  });
+</script>
+</body>
+</html>	
